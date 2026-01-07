@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>이미지 세로 병합 · 간격 포함 · 900KB</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f3f3f3;
+    padding: 30px;
+}
+.container {
+    max-width: 520px;
+    margin: auto;
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+}
+input, button {
+    width: 100%;
+    margin-top: 10px;
+}
+button {
+    padding: 10px;
+    background: #111;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+button:hover {
+    background: #333;
+}
+img {
+    max-width: 100%;
+    margin-top: 15px;
+}
+.info {
+    margin-top: 10px;
+    font-size: 14px;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+    <h2>이미지 세로 병합 (간격 포함 · 900KB)</h2>
+
+    <input type="file" id="files" accept="image/*" multiple>
+    <button onclick="mergeAndCompress()">병합 & 저장 준비</button>
+
+    <div id="result"></div>
+</div>
+
+<script>
+const MAX_SIZE = 900 * 1024;
+const GAP = 20; // 이미지 사이 간격 (px)
+
+async function mergeAndCompress() {
+    const files = document.getElementById("files").files;
+    if (!files.length) return;
+
+    const images = await Promise.all([...files].map(loadImage));
+
+    // 1. 병합 크기 계산
+    const maxWidth = Math.max(...images.map(img => img.width));
+    const totalHeight =
+        images.reduce((sum, img) => {
+            return sum + img.height * (maxWidth / img.width);
+        }, 0)
+        + GAP * (images.length - 1);
+
+    let canvas = document.createElement("canvas");
+    let ctx = canvas.getContext("2d");
+
+    canvas.width = maxWidth;
+    canvas.height = totalHeight;
+
+    // 2. 세로 병합 + 간격 적용
+    let y = 0;
+    images.forEach((img, index) => {
+        const scale = maxWidth / img.width;
+        const h = img.height * scale;
+        ctx.drawImage(img, 0, y, maxWidth, h);
+        y += h + GAP;
+    });
+
+    // 3. 900KB 이하 압축
+    let quality = 0.9;
+    let blob;
+
+    while (true) {
+        blob = dataURLtoBlob(canvas.toDataURL("image/jpeg", quality));
+        if (blob.size <= MAX_SIZE) break;
+
+        quality -= 0.05;
+
+        if (quality < 0.1) {
+            const temp = document.createElement("canvas");
+            temp.width = canvas.width * 0.9;
+            temp.height = canvas.height * 0.9;
+            temp.getContext("2d").drawImage(
+                canvas, 0, 0, temp.width, temp.height
+            );
+            canvas = temp;
+            ctx = canvas.getContext("2d");
+            quality = 0.9;
+        }
+    }
+
+    const url = URL.createObjectURL(blob);
+
+    document.getElementById("result").innerHTML = `
+        <img src="${url}">
+        <div class="info">
+            최종 용량: ${(blob.size / 1024).toFixed(1)} KB
+        </div>
+        <a href="${url}" download="merged_900kb.jpg">
+            <button>이미지 저장</button>
+        </a>
+    `;
+}
+
+function loadImage(file) {
+    return new Promise(resolve => {
+        const img = new Image();
+        const reader = new FileReader();
+        reader.onload = e => img.src = e.target.result;
+        reader.readAsDataURL(file);
+        img.onload = () => resolve(img);
+    });
+}
+
+function dataURLtoBlob(dataurl) {
+    const arr = dataurl.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) u8arr[n] = bstr.charCodeAt(n);
+    return new Blob([u8arr], { type: mime });
+}
+</script>
+
+</body>
+</html>
