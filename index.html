@@ -1,146 +1,111 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<title>이미지 세로 병합 · 간격 포함 · 900KB</title>
-
-<style>
-body {
-    font-family: Arial, sans-serif;
-    background: #f3f3f3;
-    padding: 30px;
-}
-.container {
-    max-width: 520px;
-    margin: auto;
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-}
-input, button {
-    width: 100%;
-    margin-top: 10px;
-}
-button {
-    padding: 10px;
-    background: #111;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-}
-button:hover {
-    background: #333;
-}
-img {
-    max-width: 100%;
-    margin-top: 15px;
-}
-.info {
-    margin-top: 10px;
-    font-size: 14px;
-}
-</style>
-</head>
-
-<body>
-<div class="container">
-    <h2>이미지 세로 병합 (간격 포함 · 900KB)</h2>
-
-    <input type="file" id="files" accept="image/*" multiple>
-    <button onclick="mergeAndCompress()">병합 & 저장 준비</button>
-
-    <div id="result"></div>
-</div>
-
-<script>
-const MAX_SIZE = 900 * 1024;
-const GAP = 20; // 이미지 사이 간격 (px)
-
-async function mergeAndCompress() {
-    const files = document.getElementById("files").files;
-    if (!files.length) return;
-
-    const images = await Promise.all([...files].map(loadImage));
-
-    // 1. 병합 크기 계산
-    const maxWidth = Math.max(...images.map(img => img.width));
-    const totalHeight =
-        images.reduce((sum, img) => {
-            return sum + img.height * (maxWidth / img.width);
-        }, 0)
-        + GAP * (images.length - 1);
-
-    let canvas = document.createElement("canvas");
-    let ctx = canvas.getContext("2d");
-
-    canvas.width = maxWidth;
-    canvas.height = totalHeight;
-
-    // 2. 세로 병합 + 간격 적용
-    let y = 0;
-    images.forEach((img, index) => {
-        const scale = maxWidth / img.width;
-        const h = img.height * scale;
-        ctx.drawImage(img, 0, y, maxWidth, h);
-        y += h + GAP;
-    });
-
-    // 3. 900KB 이하 압축
-    let quality = 0.9;
-    let blob;
-
-    while (true) {
-        blob = dataURLtoBlob(canvas.toDataURL("image/jpeg", quality));
-        if (blob.size <= MAX_SIZE) break;
-
-        quality -= 0.05;
-
-        if (quality < 0.1) {
-            const temp = document.createElement("canvas");
-            temp.width = canvas.width * 0.9;
-            temp.height = canvas.height * 0.9;
-            temp.getContext("2d").drawImage(
-                canvas, 0, 0, temp.width, temp.height
-            );
-            canvas = temp;
-            ctx = canvas.getContext("2d");
-            quality = 0.9;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>천불TV 영상 목록</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 20px;
+            text-align: center;
         }
-    }
-
-    const url = URL.createObjectURL(blob);
-
-    document.getElementById("result").innerHTML = `
-        <img src="${url}">
-        <div class="info">
-            최종 용량: ${(blob.size / 1024).toFixed(1)} KB
+        .container {
+            max-width: 800px;
+            margin: auto;
+        }
+        .video-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .video-item {
+            background: #fff;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: left;
+            transition: transform 0.2s;
+        }
+        .video-item:hover {
+            transform: scale(1.02);
+        }
+        .video-item a {
+            text-decoration: none;
+            color: #333;
+            font-size: 16px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>천불 나는 애들과 함께...<br>천불TV</h2>
+        <div class="video-list">
+        	  <div class="video-item"><a href="https://youtu.be/lrSv5pi0KuE" target="_blank">📅 2026.01.03 - 광명동굴</a></div>
+        	  <div class="video-item"><a href="https://youtu.be/ESC4Lssdmys" target="_blank">📅 2025.12.25 - 소미 바이올린 연주</a></div>
+          	<div class="video-item"><a href="https://youtu.be/w0hfgs1fVn0" target="_blank">📅 2025.12.22 - 안소미 초등학교 졸업</a></div>
+        	  <div class="video-item"><a href="https://youtu.be/cs2EuzMBOso" target="_blank">📅 2025.11.29 - 명동</a></div>
+          	<div class="video-item"><a href="https://youtu.be/0GyO1ec_W-c" target="_blank">📅 2025.11.23 - 예천 덕용제4.9</a></div>
+           	<div class="video-item"><a href="https://youtu.be/73LEgC6iYXw" target="_blank">📅 2025.10.25 - 정선 민둥산.하이원 리조트</a></div>
+        	  <div class="video-item"><a href="https://youtu.be/NGZ58ElxByk" target="_blank">📅 2025.10.07 - 일본 5 (교토.오사카)</a></div>
+        	  <div class="video-item"><a href="https://youtu.be/jWByfAz_8u8" target="_blank">📅 2025.10.06 - 일본 4 (교토.오사카)</a></div>
+        	  <div class="video-item"><a href="https://youtu.be/gERZMT98jZQ" target="_blank">📅 2025.10.05 - 일본 3 (교토.오사카)</a></div>
+        	  <div class="video-item"><a href="https://youtu.be/wGN6EoUQwLM" target="_blank">📅 2025.10.04 - 일본 2 (교토.오사카)</a></div>
+        	  <div class="video-item"><a href="https://youtu.be/40xsA7XA7Yg" target="_blank">📅 2025.10.03 - 일본 1 (교토.오사카)</a></div>
+        	  
+        	  <div class="video-item"><a href="https://youtu.be/KhX2sf-MfX4" target="_blank">📅 2025.08.23 - 비봉/전곡항(해적선)</a></div>
+        	  <div class="video-item"><a href="https://youtu.be/WiOIS-bg98k" target="_blank">📅 2025.07.19 - 정동진 비치크루즈.바다부채길.레일바이크</a></div>
+        	  <div class="video-item"><a href="https://youtu.be/Ubr-8ucOP-s" target="_blank">📅 2025.05.30 - 맨 끝줄 소년</a></div>
+        	  <div class="video-item"><a href="https://youtu.be/mRPnVrO0xII" target="_blank">📅 2025.05.25 - 창덕궁.창경궁.후원</a></div>
+        	  <div class="video-item"><a href="https://youtu.be/833G4n5HOPM" target="_blank">📅 2025.04.30 - 안소미 6학년 국어 PPT 발표회</a></div>
+           	<div class="video-item"><a href="https://youtu.be/EqV9P3eXa7I" target="_blank">📅 2025.04.29 - 영수형님 입국</a></div>
+        	  <div class="video-item"><a href="https://youtu.be/YwyoEuI_u1g" target="_blank">📅 2025.04.26 - 교동 화개정원.대륭시장</a></div>
+        	  <div class="video-item"><a href="https://youtu.be/6drEx3rv0tM" target="_blank">📅 2025.04.16 - 6학년 체육대회(안소미 달리기반대표 출전)</a></div>
+        	  <div class="video-item"><a href="https://youtu.be/YToPrtGuBKM" target="_blank">📅 2025.03.18 - 안소미 바이올린 연주회</a></div>
+          	<div class="video-item"><a href="https://youtu.be/IEW-EnKxo0Y" target="_blank">📅 2025.03.08 - 서산마애여래삼존상/오천항/외암민속마을</a></div>
+        	  <div class="video-item"><a href="https://youtu.be/34K8vSqFwNA" target="_blank">📅 2025.02.22 - 설악산 흔들바위/낙산사/낙산비치호텔/하조대/휴휴암</a></div>
+        	  <div class="video-item"><a href="https://youtu.be/FiZU8ZxqUrk" target="_blank">📅 2025.02.15 - 덕수궁 석조전/익선동</a></div>
+        	  <div class="video-item"><a href="https://youtu.be/FZmGzecGNK0" target="_blank">📅 2025.02.09 - 영수형 인천2청사 입국날</a></div>
+        	  <div class="video-item"><a href="https://youtu.be/b1dh7767jyM" target="_blank">📅 2025.02.08 - 오장균 치과</a></div>
+            <div class="video-item"><a href="https://www.youtube.com/watch?v=muJUGlEi9uA" target="_blank">📅 2025.01.31 - 용산국립중앙박물관(구스타프 클림트 & 에곤 실레)</a></div>
+            <div class="video-item"><a href="https://youtu.be/nRlGbcJ4_Fs" target="_blank">📅 2025.01.26 - 남대문시장.명동</a></div>
+            <div class="video-item"><a href="https://youtu.be/Yzf2SfIgG1g" target="_blank">📅 2025.01.18 - 비봉추모공원</a></div>
+            <div class="video-item"><a href="https://youtu.be/xQoHaCX4kE8" target="_blank">📅 2025.01.04 - 대한민국역사박물관.교보문고</a></div>
+            <div class="video-item"><a href="https://youtu.be/L6rAfE9EN88" target="_blank">📅 2024.12.21 - 아이폰16 사러 가는 날(여의도 더 현대)</a></div>
+            <div class="video-item"><a href="https://youtu.be/Hyb01pd_ObM" target="_blank">📅 2024.11.17 - 영수형 입국(인천공항 2청사)</a></div>
+            <div class="video-item"><a href="https://youtu.be/SOHAUDfgHvM" target="_blank">📅 2024.11.09 - 대관령 하늘목장.발왕산 정상.용평 리조트</a></div>
+            <div class="video-item"><a href="https://youtu.be/6ephA89JCms" target="_blank">📅 2024.11.02 - 시흥 연꽃테마파크.장금이(음식점)</a></div>
+            <div class="video-item"><a href="https://youtu.be/Z-I7QtTi2Yk" target="_blank">📅 2024.10.13 - 부천 아트센터 지브리 OST 콘서트</a></div>
+            <div class="video-item"><a href="https://youtu.be/YCYQV07VVU0" target="_blank">📅 2024.10.09 - 강화도 풍물시장.젖갈시장</a></div>
+            <div class="video-item"><a href="https://youtu.be/0ZRodGkAtSw" target="_blank">📅 2024.09.28 - 인제 백담사.갯골 자연휴양림.38선 휴게소</a></div>
+            <div class="video-item"><a href="https://youtu.be/Wkdl67Zd0oY" target="_blank">📅 2024.09.21 - 부천역 아트박스</a></div>
+            <div class="video-item"><a href="https://youtu.be/6bIQ2j9KF_k" target="_blank">📅 2024.08.31 - 첫 성당 다녀오기</a></div>
+            <div class="video-item"><a href="https://youtu.be/7irfCs6IPn8" target="_blank">📅 2024.08.17 - 낙원상가/인사동/익선동</a></div>
+            <div class="video-item"><a href="https://youtu.be/J90HM15hE5U" target="_blank">📅 2024.08.13 - 첫 OO</a></div>
+        
+            <div class="video-item"><a href="https://youtu.be/0Z1WDqyd8PE" target="_blank">📅 2024.08.09 - 엄마 마중 나가기</a></div>
+            <div class="video-item"><a href="https://youtu.be/cnJx-oi-c_8" target="_blank">📅 2024.08.03 -  서대문 형무소 역사관</a></div>
+            <div class="video-item"><a href="https://youtu.be/7kLHnNkbhgw" target="_blank">📅 2024.07.13 -  단양구경시장/청주동물원/상당산성휴양림/국립청주박물관</a></div>
+            <div class="video-item"><a href="https://youtu.be/ibhQMn82kTE" target="_blank">📅 2024.07.06 -  부천 현대백화점 영화(인사이드아웃2)</a></div>
+            <div class="video-item"><a href="https://youtu.be/Y5RMCHrcXZg" target="_blank">📅 2024.06.29 -  인제더덕식당/속초 하늬라벤더팜/켄싱턴 속초</a></div>
+            <div class="video-item"><a href="https://youtu.be/LorflYUEFp4" target="_blank">📅 2024.06.08 -  서울 덕수궁</a></div>
+            <div class="video-item"><a href="https://youtu.be/H8ZslDeIZqQ" target="_blank">📅 2024.06.01 -  포천 아트밸리/산정호수</a></div>
+            <div class="video-item"><a href="https://youtu.be/reYZownYOIc" target="_blank">📅 2024.05.04 -  경기도 연천 재인폭포</a></div>
+            <div class="video-item"><a href="https://youtu.be/pEyMH4ByAtY" target="_blank">📅 2024.04.10 -  파주 방목리.통일촌</a></div>
+            <div class="video-item"><a href="https://youtu.be/YgxI5Pg-ehQ" target="_blank">📅 2024.01.21 -  한가람 미술관 미셸 들라크루아 전시회</a></div>
+            <div class="video-item"><a href="https://youtu.be/cOEoVWlbcqo" target="_blank">📅 2024.03.08 -  FC24 토트넘 VS 아스날</a></div>
+            <div class="video-item"><a href="https://youtu.be/WIx3hukJiTU" target="_blank">📅 2024.02.11 -  부천역 아트박스</a></div>
+            <div class="video-item"><a href="https://youtu.be/QD62oGfMz6E" target="_blank">📅 2024.02.04 -  상동호수공원내 수피아 식물원</a></div>
+            <div class="video-item"><a href="https://youtu.be/8UJ5fjdSUD4" target="_blank">📅 2023.12.30 -  비봉추모공원/시흥하늘휴게소/소풍아울렛</a></div>
+            <div class="video-item"><a href="https://youtu.be/4BOh68PtjZk" target="_blank">📅 2023.12.23 -  잠실주경기장. 태양의 서커스 루치아</a></div>
+            
+                
+        
+        
+        
         </div>
-        <a href="${url}" download="merged_900kb.jpg">
-            <button>이미지 저장</button>
-        </a>
-    `;
-}
-
-function loadImage(file) {
-    return new Promise(resolve => {
-        const img = new Image();
-        const reader = new FileReader();
-        reader.onload = e => img.src = e.target.result;
-        reader.readAsDataURL(file);
-        img.onload = () => resolve(img);
-    });
-}
-
-function dataURLtoBlob(dataurl) {
-    const arr = dataurl.split(',');
-    const mime = arr[0].match(/:(.*?);/)[1];
-    const bstr = atob(arr[1]);
-    let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-    while (n--) u8arr[n] = bstr.charCodeAt(n);
-    return new Blob([u8arr], { type: mime });
-}
-</script>
-
+    </div>
 </body>
 </html>
